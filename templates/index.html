@@ -10,7 +10,13 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
-  // emailjs.init("Kij0yztGpVOMqQ6w4");
+  emailjs.init({
+  publicKey: "Kij0yztGpVOMqQ6w4",
+  blockHeadless: false,
+  limitRate: {
+    throttle: 2000
+  }
+});
 </script>
 </head>
 <body>
