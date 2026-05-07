@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WeatherWise — Admin Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#f1f5f9;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.card{background:#fff;border-radius:20px;padding:40px 36px;width:380px;box-shadow:0 4px 24px rgba(0,0,0,0.08)}
+.icon{font-size:36px;text-align:center;margin-bottom:12px}
+h1{font-size:1.4rem;font-weight:800;text-align:center;color:#0f172a;margin-bottom:4px}
+p{font-size:0.88rem;color:#64748b;text-align:center;margin-bottom:28px}
+label{display:block;font-size:0.8rem;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
+input{width:100%;padding:12px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:0.95rem;color:#0f172a;outline:none;transition:border-color 0.2s}
+input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,0.12)}
+button{width:100%;margin-top:16px;padding:13px;background:#3b7bff;color:#fff;border:none;border-radius:10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:background 0.2s}
+button:hover{background:#2563eb}
+.error{margin-top:12px;padding:10px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:#dc2626;font-size:0.85rem;text-align:center}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="icon">🔐</div>
+  <h1>Admin Access</h1>
+  <p>WeatherWise dashboard — authorised personnel only</p>
+  <form method="POST" action="/admin">
+    <label>Password</label>
+    <input type="password" name="password" placeholder="Enter admin password" autofocus>
+    <button type="submit">Enter Dashboard →</button>
+    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+  </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WeatherWise — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f8fafc; --surface:#fff; --surface2:#f1f5f9;
+  --border:#e2e8f0; --text:#0f172a; --text2:#64748b; --text3:#94a3b8;
+  --accent:#3b7bff; --accent-bg:rgba(59,123,255,0.08);
+  --danger:#ef4444; --danger-bg:rgba(239,68,68,0.08);
+  --success:#10b981; --warning:#f59e0b;
+  --shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.04);
+  --radius:14px;
+}
+[data-theme=dark]{
+  --bg:#0f172a; --surface:#1e293b; --surface2:#0f172a;
+  --border:#334155; --text:#f1f5f9; --text2:#94a3b8; --text3:#475569;
+  --shadow:0 1px 3px rgba(0,0,0,0.3),0 4px 16px rgba(0,0,0,0.2);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+
+/* SIDEBAR */
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:0;flex-shrink:0;position:sticky;top:0;height:100vh}
+.sb-brand{padding:24px 20px 20px;border-bottom:1px solid var(--border)}
+.sb-brand h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.1rem;font-weight:800;letter-spacing:-0.02em;color:var(--text)}
+.sb-brand p{font-size:0.75rem;color:var(--text3);margin-top:2px}
+.sb-nav{padding:12px 10px;flex:1;display:flex;flex-direction:column;gap:2px}
+.nav-btn{display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;border:none;background:none;border-radius:10px;color:var(--text2);font-family:'Inter',sans-serif;font-size:0.88rem;cursor:pointer;transition:all 0.15s;text-align:left}
+.nav-btn:hover{background:var(--surface2);color:var(--text)}
+.nav-btn.active{background:var(--accent-bg);color:var(--accent);font-weight:600}
+.nav-btn .ni{font-size:16px;flex-shrink:0}
+.sb-footer{padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center}
+.theme-btn{background:none;border:none;font-size:20px;cursor:pointer;flex-shrink:0}
+.logout-btn{font-size:0.8rem;color:var(--text3);text-decoration:none;transition:color 0.15s}
+.logout-btn:hover{color:var(--danger)}
+
+/* MAIN */
+.main{flex:1;padding:32px;overflow-y:auto}
+.page-head{margin-bottom:28px}
+.page-head h2{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.7rem;font-weight:800;letter-spacing:-0.03em;color:var(--text)}
+.page-head p{color:var(--text2);font-size:0.9rem;margin-top:4px}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-bottom:28px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.stat-icon{font-size:24px;margin-bottom:10px;display:block}
+.stat-label{font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);margin-bottom:6px}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:2.2rem;font-weight:800;color:var(--text);line-height:1}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:24px;box-shadow:var(--shadow);overflow:hidden}
+.card-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border)}
+.card-head h3{font-family:'Plus Jakarta Sans',sans-serif;font-size:0.98rem;font-weight:700;color:var(--text)}
+.badge{padding:3px 10px;border-radius:20px;font-size:0.75rem;font-weight:700;background:var(--accent-bg);color:var(--accent)}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:0.85rem}
+thead{background:var(--surface2)}
+th{padding:10px 16px;text-align:left;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);white-space:nowrap}
+td{padding:12px 16px;color:var(--text);border-top:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:var(--surface2)}
+.td-muted{color:var(--text2);font-size:0.82rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.td-bold{font-weight:600}
+
+/* BADGES */
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:0.75rem;font-weight:600}
+.pill-on{background:rgba(16,185,129,0.1);color:#10b981}
+.pill-off{background:var(--surface2);color:var(--text3)}
+
+/* ACTION BUTTONS */
+.btn{padding:5px 12px;border-radius:8px;border:none;cursor:pointer;font-size:0.78rem;font-weight:600;font-family:'Inter',sans-serif;transition:all 0.15s;white-space:nowrap}
+.btn-danger{background:var(--danger-bg);color:var(--danger)}
+.btn-danger:hover{background:rgba(239,68,68,0.16)}
+.btn-neutral{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+.btn-neutral:hover{color:var(--text)}
+.action-group{display:flex;gap:6px;flex-wrap:wrap}
+
+/* CITY BARS */
+.city-bars{padding:18px 22px;display:flex;flex-direction:column;gap:12px}
+.bar-row{display:flex;align-items:center;gap:12px}
+.bar-name{width:120px;font-size:0.88rem;font-weight:500;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
+.bar-track{flex:1;background:var(--surface2);border-radius:4px;height:8px;overflow:hidden;border:1px solid var(--border)}
+.bar-fill{height:100%;background:var(--accent);border-radius:4px;transition:width 1s cubic-bezier(0.34,1.56,0.64,1)}
+.bar-count{font-size:0.82rem;color:var(--text2);width:24px;text-align:right;flex-shrink:0}
+
+/* FILTER */
+.filter-input{padding:7px 12px;border:1.5px solid var(--border);border-radius:9px;background:var(--surface2);color:var(--text);font-family:'Inter',sans-serif;font-size:0.85rem;outline:none;width:200px;transition:border-color 0.15s}
+.filter-input:focus{border-color:var(--accent)}
+
+/* TABS HIDDEN */
+.tab{display:none}
+.tab.active{display:block}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:999;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;width:min(420px,90vw);box-shadow:0 20px 60px rgba(0,0,0,0.15)}
+.modal h3{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.1rem;font-weight:800;margin-bottom:8px}
+.modal p{font-size:0.88rem;color:var(--text2);margin-bottom:22px;line-height:1.55}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end}
+.btn-confirm{padding:9px 20px;border-radius:9px;border:none;background:var(--danger);color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:0.9rem;font-weight:700;cursor:pointer}
+.btn-cancel{padding:9px 20px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--text2);font-family:'Inter',sans-serif;font-size:0.88rem;cursor:pointer}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;z-index:9999;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:0.88rem;color:var(--text);box-shadow:0 8px 24px rgba(0,0,0,0.12);display:none}
+.toast.show{display:flex;align-items:center;gap:8px;animation:toastIn 0.3s ease both}
+.toast.t-success{border-left:3px solid var(--success)}
+.toast.t-error{border-left:3px solid var(--danger)}
+@keyframes toastIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+.empty-cell{text-align:center;padding:32px!important;color:var(--text3);font-size:0.88rem}
+
+@media(max-width:700px){.sidebar{display:none}.main{padding:16px}}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sb-brand">
+    <h1>⛅ WeatherWise</h1>
+    <p>Admin Dashboard</p>
+  </div>
+  <div class="sb-nav">
+    <button class="nav-btn active" onclick="showTab('overview',this)"><span class="ni">📊</span> Overview</button>
+    <button class="nav-btn" onclick="showTab('users',this)"><span class="ni">👥</span> Users</button>
+    <button class="nav-btn" onclick="showTab('history',this)"><span class="ni">🔍</span> Search History</button>
+  </div>
+  <div class="sb-footer">
+    <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+    <a href="/admin/logout" class="logout-btn">Sign out</a>
+  </div>
+</nav>
+
+<main class="main">
+
+  <!-- OVERVIEW -->
+  <div id="tab-overview" class="tab active">
+    <div class="page-head">
+      <h2>Overview</h2>
+      <p>Database statistics and top activity at a glance</p>
+    </div>
+    <div class="stats">
+      <div class="stat-card"><span class="stat-icon">👥</span><div class="stat-label">Total Users</div><div class="stat-val" id="s-users">—</div></div>
+      <div class="stat-card"><span class="stat-icon">🔔</span><div class="stat-label">Alerts Active</div><div class="stat-val" id="s-alerts">—</div></div>
+      <div class="stat-card"><span class="stat-icon">🔍</span><div class="stat-label">Total Searches</div><div class="stat-val" id="s-searches">—</div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>🏙️ Top Searched Cities</h3></div>
+      <div class="city-bars" id="cityBars"><p style="color:var(--text3);font-size:0.88rem">No data yet</p></div>
+    </div>
+  </div>
+
+  <!-- USERS -->
+  <div id="tab-users" class="tab">
+    <div class="page-head">
+      <h2>Users</h2>
+      <p>All registered accounts — manage or delete</p>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <h3>All Users</h3>
+        <span class="badge" id="userCount">—</span>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>#</th><th>Name</th><th>Email</th><th>Registered</th>
+            <th>Last Login</th><th>Searches</th><th>Alert</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="usersBody"><tr><td class="empty-cell" colspan="8">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="tab-history" class="tab">
+    <div class="page-head">
+      <h2>Search History</h2>
+      <p>All city searches across all users</p>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <h3>Recent Searches</h3>
+        <input class="filter-input" id="histFilter" type="text" placeholder="Filter by email…" oninput="filterHistory()">
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>#</th><th>User</th><th>City</th><th>Searched At</th></tr></thead>
+          <tbody id="histBody"><tr><td class="empty-cell" colspan="4">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <h3 id="modal-title">Are you sure?</h3>
+    <p id="modal-desc">This cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-confirm" onclick="runModal()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let allHistory = [];
+let modalFn    = null;
+
+// Theme
+function toggleTheme(){
+  const r = document.documentElement;
+  const d = r.getAttribute('data-theme')==='dark';
+  r.setAttribute('data-theme', d?'light':'dark');
+  document.querySelector('.theme-btn').textContent = d?'🌙':'☀️';
+  localStorage.setItem('ww-admin-theme', d?'light':'dark');
+}
+(()=>{
+  const t = localStorage.getItem('ww-admin-theme')||'light';
+  document.documentElement.setAttribute('data-theme',t);
+  document.querySelector('.theme-btn').textContent = t==='dark'?'☀️':'🌙';
+})();
+
+// Toast
+function toast(msg,type='success'){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className=`toast show t-${type}`;
+  clearTimeout(window._t);
+  window._t=setTimeout(()=>el.classList.remove('show'),3000);
+}
+
+// Tabs
+function showTab(name,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(name==='users')   loadUsers();
+  if(name==='history') loadHistory();
+}
+
+// Modal
+function openModal(title,desc,fn){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-desc').textContent=desc;
+  modalFn=fn;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){ document.getElementById('modal').classList.remove('open'); modalFn=null; }
+function runModal(){ if(modalFn) modalFn(); closeModal(); }
+
+// Overview
+async function loadOverview(){
+  const r = await fetch('/admin/stats');
+  const d = await r.json();
+  document.getElementById('s-users').textContent   = d.users;
+  document.getElementById('s-alerts').textContent  = d.alerts_on;
+  document.getElementById('s-searches').textContent = d.searches;
+
+  const bars = document.getElementById('cityBars');
+  if(!d.top_cities||!d.top_cities.length){
+    bars.innerHTML='<p style="color:var(--text3);font-size:0.88rem">No searches yet</p>';
+    return;
+  }
+  const max = d.top_cities[0][1];
+  bars.innerHTML = d.top_cities.map(([city,cnt])=>`
+    <div class="bar-row">
+      <span class="bar-name">${city}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(cnt/max*100)}%"></div></div>
+      <span class="bar-count">${cnt}</span>
+    </div>`).join('');
+}
+
+// Users
+async function loadUsers(){
+  const r = await fetch('/admin/users');
+  const users = await r.json();
+  document.getElementById('userCount').textContent = users.length;
+  const tbody = document.getElementById('usersBody');
+  if(!users.length){ tbody.innerHTML='<tr><td class="empty-cell" colspan="8">No users yet</td></tr>'; return; }
+  tbody.innerHTML = users.map(u=>`
+    <tr>
+      <td>${u.id}</td>
+      <td class="td-bold">${u.name}</td>
+      <td class="td-muted">${u.email}</td>
+      <td class="td-muted">${u.created_at?u.created_at.slice(0,16):'—'}</td>
+      <td class="td-muted">${u.last_login?u.last_login.slice(0,16):'Never'}</td>
+      <td>${u.search_count}</td>
+      <td>
+        <span class="pill ${u.alert_enabled?'pill-on':'pill-off'}">
+          ${u.alert_enabled?'🔔 On':'⏸ Off'}
+        </span>
+        ${u.alert_enabled&&u.alert_city?`<br><small style="color:var(--text3);font-size:0.75rem">${u.alert_city} · ${u.alert_time}</small>`:''}
+      </td>
+      <td>
+        <div class="action-group">
+          <button class="btn btn-neutral" onclick="openModal('Clear History','Delete all search history for ${u.email}?',()=>clearHistory('${u.email}'))">🗑 History</button>
+          <button class="btn btn-danger"  onclick="openModal('Delete Account','Permanently delete ${u.name} (${u.email}) and all their data?',()=>deleteUser('${u.email}'))">✕ Delete</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+async function deleteUser(email){
+  const r = await fetch('/admin/delete_user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+  const d = await r.json();
+  if(d.status==='deleted'){ toast(`Deleted ${email}`); loadUsers(); loadOverview(); }
+  else toast(d.message||'Error','error');
+}
+
+async function clearHistory(email){
+  const r = await fetch('/admin/delete_user_history',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+  const d = await r.json();
+  if(d.status==='cleared'){ toast(`History cleared for ${email}`); loadUsers(); loadOverview(); }
+  else toast('Error','error');
+}
+
+// History
+async function loadHistory(){
+  const r = await fetch('/admin/history?limit=100');
+  allHistory = await r.json();
+  renderHistory(allHistory);
+}
+function filterHistory(){
+  const v = document.getElementById('histFilter').value.toLowerCase();
+  renderHistory(v ? allHistory.filter(h=>h.user_email.toLowerCase().includes(v)) : allHistory);
+}
+function renderHistory(rows){
+  const tbody = document.getElementById('histBody');
+  if(!rows.length){ tbody.innerHTML='<tr><td class="empty-cell" colspan="4">No history found</td></tr>'; return; }
+  tbody.innerHTML = rows.map(r=>`
+    <tr>
+      <td>${r.id}</td>
+      <td class="td-muted">${r.user_email}</td>
+      <td class="td-bold">📍 ${r.city}</td>
+      <td class="td-muted">${r.searched_at?r.searched_at.slice(0,16):'—'}</td>
+    </tr>`).join('');
+}
+
+loadOverview();
+</script>
+</body>
+</html>

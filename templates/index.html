@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WeatherWise — Weather Forecast</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+  // emailjs.init("Kij0yztGpVOMqQ6w4");
+</script>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+  <span class="theme-icon">🌙</span>
+</button>
+
+<!-- ═══════════ AUTH PAGE ═══════════ -->
+<div id="authPage" class="page">
+  <div class="auth-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <div class="auth-card">
+    <div class="brand">
+      <div class="brand-icon">⛅</div>
+      <h1 class="brand-name">WeatherWise</h1>
+      <p class="brand-sub">Smart forecasts, delivered to you</p>
+    </div>
+
+    <div id="loginForm" class="form active">
+      <h2 class="form-title">Sign in</h2>
+      <div class="input-group">
+        <span class="input-icon">✉️</span>
+        <input type="email" id="loginEmail" placeholder="Email address" autocomplete="email">
+      </div>
+      <div class="input-group">
+        <span class="input-icon">🔒</span>
+        <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password">
+        <button class="pwd-toggle" type="button" onclick="togglePwd('loginPassword',this)">👁</button>
+      </div>
+      <button class="btn-primary" onclick="loginUser()">
+        <span>Sign In</span><span class="btn-arrow">→</span>
+      </button>
+      <div class="form-links">
+        <span onclick="showForm('registerForm')">Create account</span>
+        <span onclick="showForm('forgotForm')">Forgot password?</span>
+      </div>
+      <div class="divider"><span>or</span></div>
+      <button class="btn-ghost" onclick="enterGuest()">Continue as Guest</button>
+    </div>
+
+    <div id="registerForm" class="form">
+      <h2 class="form-title">Create account</h2>
+      <div class="input-group">
+        <span class="input-icon">👤</span>
+        <input type="text" id="regName" placeholder="Full name" autocomplete="name">
+      </div>
+      <div class="input-group">
+        <span class="input-icon">✉️</span>
+        <input type="email" id="regEmail" placeholder="Email address" autocomplete="email">
+      </div>
+      <div class="input-group">
+        <span class="input-icon">🔒</span>
+        <input type="password" id="regPassword" placeholder="Password (min 6 chars)" autocomplete="new-password">
+        <button class="pwd-toggle" type="button" onclick="togglePwd('regPassword',this)">👁</button>
+      </div>
+      <button class="btn-primary" onclick="registerUser()">
+        <span>Create Account</span><span class="btn-arrow">→</span>
+      </button>
+      <div class="form-links center">
+        <span onclick="showForm('loginForm')">← Back to sign in</span>
+      </div>
+    </div>
+
+    <!-- FORGOT Step 1: verify email -->
+    <div id="forgotForm" class="form">
+      <h2 class="form-title">Reset password</h2>
+      <p class="form-desc">Enter your registered email address.</p>
+      <div class="input-group">
+        <span class="input-icon">✉️</span>
+        <input type="email" id="forgotEmail" placeholder="Email address">
+      </div>
+      <button class="btn-primary" onclick="forgotLookup()">
+        <span>Continue</span><span class="btn-arrow">→</span>
+      </button>
+      <div class="form-links center">
+        <span onclick="showForm('loginForm')">← Back to sign in</span>
+      </div>
+    </div>
+
+    <!-- FORGOT Step 2: set new password -->
+    <div id="resetForm" class="form">
+      <h2 class="form-title">New password</h2>
+      <p class="form-desc">Setting new password for <strong id="resetEmailLabel"></strong></p>
+      <div class="input-group">
+        <span class="input-icon">🔒</span>
+        <input type="password" id="resetNewPw" placeholder="New password (min 6 chars)">
+        <button class="pwd-toggle" type="button" onclick="togglePwd('resetNewPw',this)">👁</button>
+      </div>
+      <div class="input-group">
+        <span class="input-icon">🔒</span>
+        <input type="password" id="resetConfirmPw" placeholder="Confirm new password">
+        <button class="pwd-toggle" type="button" onclick="togglePwd('resetConfirmPw',this)">👁</button>
+      </div>
+      <button class="btn-primary" onclick="doResetPassword()">
+        <span>Save New Password</span><span class="btn-arrow">→</span>
+      </button>
+      <div class="form-links center">
+        <span onclick="showForm('loginForm')">← Cancel, back to sign in</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ WEATHER PAGE ═══════════ -->
+<div id="weatherPage" class="page hidden">
+  <div class="weather-layout">
+
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <div class="brand-sm">
+          <span>⛅</span>
+          <span class="brand-name-sm">WeatherWise</span>
+        </div>
+        <div id="userBadge" class="user-badge hidden">
+          <div class="user-avatar" id="userAvatar">?</div>
+          <span id="userLabel">Guest</span>
+        </div>
+      </div>
+
+      <div class="search-section">
+        <div class="search-bar">
+          <input type="text" id="cityInput" placeholder="Search city…"
+            onkeydown="if(event.key==='Enter') getWeather()">
+          <button class="search-btn" onclick="getWeather()">🔍</button>
+        </div>
+        <div id="searchError" class="search-error hidden">City not found. Try again.</div>
+      </div>
+
+      <div class="history-box">
+        <h3 class="sidebar-section-title">Recent Searches</h3>
+        <ul id="historyList" class="history-list"></ul>
+        <p id="historyEmpty" class="history-empty">No searches yet</p>
+      </div>
+
+      <!-- ALERT PANEL — only shown when logged in -->
+      <div id="alertPanel" class="alert-panel hidden">
+        <h3 class="sidebar-section-title">📧 Weather Alerts</h3>
+        <div class="alert-toggle-row">
+          <label class="toggle-label">
+            <input type="checkbox" id="alertToggle" onchange="updateAlertPanel()">
+            <span class="toggle-switch"></span>
+            <span class="toggle-text">Enable email alerts</span>
+          </label>
+        </div>
+        <div id="alertOptions" class="alert-options-hidden">
+          <div class="alert-fields">
+            <div class="alert-field">
+              <label class="field-label">City</label>
+              <input type="text" id="alertCity" placeholder="e.g. Guwahati" class="alert-input">
+            </div>
+            <div class="alert-field">
+              <label class="field-label">Send time</label>
+              <input type="time" id="alertTime" value="07:00" class="alert-input">
+            </div>
+            <div class="alert-field">
+              <label class="field-label">Frequency</label>
+              <select id="alertFreq" class="alert-input">
+                <option value="daily">Every day</option>
+                <option value="weekdays">Weekdays only</option>
+                <option value="weekends">Weekends only</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-alert-save" onclick="saveAlertSettings()">💾 Save Settings</button>
+          <button id="testAlertBtn" class="btn-alert-test" onclick="sendTestAlert()">📧 Send Test Email</button>
+          <p class="alert-hint">Sends a real weather email to your inbox now.</p>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <a href="/admin" target="_blank" class="admin-link">⚙️ Admin Panel</a>
+        <button class="btn-back" onclick="goBack()">← Sign Out</button>
+      </div>
+    </aside>
+
+    <main class="weather-main">
+      <div id="loadingState" class="state-screen hidden">
+        <div class="loader"></div>
+        <p>Fetching weather data…</p>
+      </div>
+
+      <div id="emptyState" class="state-screen">
+        <div class="empty-icon">🌤️</div>
+        <h2>Search for a city</h2>
+        <p>Enter a city name to see the current weather and 7-day forecast.</p>
+      </div>
+
+      <div id="weatherContent" class="hidden">
+        <div class="current-weather-card">
+          <div class="current-left">
+            <div class="city-name" id="cityName">—</div>
+            <div class="weather-date" id="weatherDate">—</div>
+            <div class="temp-display">
+              <span id="currentTemp" class="temp-big">—</span>
+              <div class="temp-meta">
+                <div id="weatherDesc" class="weather-desc">—</div>
+                <div class="temp-range">
+                  <span id="tempHigh">↑—</span>
+                  <span id="tempLow">↓—</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="current-right">
+            <div class="weather-emoji" id="weatherEmoji">🌤️</div>
+            <div class="weather-stats">
+              <div class="stat"><span class="stat-icon">💧</span><span id="humidity">—</span><span class="stat-label">Humidity</span></div>
+              <div class="stat"><span class="stat-icon">💨</span><span id="windSpeed">—</span><span class="stat-label">Wind</span></div>
+              <div class="stat"><span class="stat-icon">👁️</span><span id="visibility">—</span><span class="stat-label">Visibility</span></div>
+              <div class="stat"><span class="stat-icon">🌡️</span><span id="feelsLike">—</span><span class="stat-label">Feels Like</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="card-header">
+            <h3>7-Day Temperature Forecast</h3>
+            <div class="chart-toggle">
+              <button class="toggle-btn active" onclick="switchChart('line',this)">Line</button>
+              <button class="toggle-btn" onclick="switchChart('bar',this)">Bar</button>
+            </div>
+          </div>
+          <div class="chart-wrap"><canvas id="forecastChart"></canvas></div>
+        </div>
+
+        <div class="forecast-section">
+          <h3 class="section-title">Daily Overview</h3>
+          <div id="forecastCards" class="forecast-cards"></div>
+        </div>
+
+        <div class="hourly-section">
+          <h3 class="section-title">Hourly Forecast (24h)</h3>
+          <div id="hourlyScroll" class="hourly-scroll"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
